@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    .cell {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      line-height: 7px;
+      background-color: #ccc;
+      border-bottom: 1px solid white;
+      border-right: 1px solid white;
+      vertical-align: middle;
+    }
+
+    #container {
+      width: 701px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="container"></div>
+  <button onclick="localStorage['map'] = JSON.stringify(map)">save</button>
+</body>
+<script>
+  const map = localStorage['map'] ? JSON.parse(localStorage['map']) : Array(10000).fill(0)
+  const container = document.getElementById('container')
+  let mousedown = false
+  let clear = false
+  for (let y = 0; y < 100; y++) {
+    for (let x = 0; x < 100; x++) {
+      const cell = document.createElement('div')
+      cell.classList.add('cell')
+
+      if (map[100 * y + x] === 1) {
+        cell.style.backgroundColor = 'black'
+      }
+      cell.addEventListener('mousemove', () => {
+        if (mousedown) {
+          if (clear) {
+            cell.style.backgroundColor = ""
+            map[100 * y + x] = 0
+          } else {
+            cell.style.backgroundColor = 'black'
+            map[100 * y + x] = 1
+          }
+        }
+      })
+      container.appendChild(cell)
+    }
+  }
+
+  document.addEventListener('mousedown', e => {
+    mousedown = true
+    clear = (e.which === 3)
+  })
+  document.addEventListener('mouseup', () => mousedown = false)
+  document.addEventListener('contextmenu', e => e.preventDefault())
+
+  function path(map, start, end) {
+    const queue = [start]
+    const _helper = (x, y) => {
+      if (x < 0 || x >= 100 || y < 0 || y >= 100) {
+        return
+      }
+      if (map[y * 100 + x]) {
+        return
+      }
+      map[y * 100 + x] = 2
+      queue.push([x, y])
+    }
+
+    while (queue.length > 0) {
+      const [x, y] = queue.shift()
+      if (x === end[0] && y === end[1]) {
+        return true
+      }
+      _helper(x - 1, y)
+      _helper(x, y - 1)
+      _helper(x + 1, y)
+      _helper(x, y + 1)
+    }
+  }
+
+  console.log(path(map, [0, 0], [5, 5]))
+</script>
+
+</html>
